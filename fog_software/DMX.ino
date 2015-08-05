@@ -3,7 +3,7 @@ int receiveDMX(int ch) {
   // Calculate how long no data backet was received
   unsigned long lastPacket = DMXSerial.noDataSince();
   
-  if (lastPacket < 5000) {
+  if (lastPacket < 800) {
     // read recent DMX values and set pwm levels 
     valueFromDMX = DMXSerial.read(ch);
     return valueFromDMX;
