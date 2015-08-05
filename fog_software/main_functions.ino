@@ -1,4 +1,5 @@
 void setup() {
+  DMXSerial.init(DMXReceiver);
 }
 void loop() {
   readTemp();
@@ -6,7 +7,7 @@ void loop() {
   
   boolean fogPlease = false;
   if(fogButtonPressed()) { fogPlease = true; }
-  //DMX fog code here
+  if(fogFromDMX()) { fogPlease = true; }
   
   
   if(fogPlease) { fogNow(); }
