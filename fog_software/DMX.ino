@@ -5,7 +5,7 @@ int receiveDMX(int ch) {
   
   if (lastPacket < 5000) {
     // read recent DMX values and set pwm levels 
-    valueFromDMX = DMXSerial.read(ch));
+    valueFromDMX = DMXSerial.read(ch);
     return valueFromDMX;
   }
   else {
