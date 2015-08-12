@@ -34,3 +34,6 @@ const int fogPin = 3;
 const int thermocouplePin = A2;
 
 const int fogButtonPin = 4;
+
+const int dipSwitchPinStart = 4;
+const int dipSwitchPinAmount = 10;

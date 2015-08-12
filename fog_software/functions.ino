@@ -90,3 +90,20 @@ void stopFog() { analogWrite(fogPin, 0); } // Stop fog
 boolean fogButtonPressed() {
   return digitalRead(fogButtonPin);
 }
+
+// Read all but last dip-switch and decode the binary output
+int readDipSwitch() {
+  int toReturn = 0;
+  // Works as long as dipSwitchPinAmount 15 or less (int is 16bit, sign bit included)
+  // dipSwitchPinAmount should be 10 or over for full DMX channel range (last
+  //  switch is the additional boolean)
+  for(int i = 0; i < dipSwitchPinAmount-1; i++) {
+    toReturn += digitalRead(dipSwitchPinStart + i) << i;
+  }
+  return toReturn;
+}
+
+// Read last dip-switch for an additional boolean
+boolean readDipSwitchLast() {
+  return digitalRead(dipSwitchPinStart + dipSwitchPinAmount-1) == HIGH;
+}
