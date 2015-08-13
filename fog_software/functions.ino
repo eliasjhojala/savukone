@@ -2,10 +2,14 @@ int timesRead = 0;
 // Reads average temperature of the fog chamber over a period of time to cancel
 // out any instabilities in the readings.
 // TODO: This function currently takes ~11s to do its measurings. This is a problem!
+int readTempJ, readTempI, readTempTemperature;
+long readTempMillis, readTempToWait;
 void readTemp() {
   timesRead++;
   if(timesRead >= 3) { timesRead = 0; }
   int tempTemperature = readThermocouple();
+  
+  //Old code begins
   for(int j = 0; j < 10; j++) {
     for(int i = 0; i < 100; i++) {
       tempTemperature = (tempTemperature + readThermocouple()) / 2;
@@ -16,6 +20,19 @@ void readTemp() {
   rawValue = tempTemperature;
   temperature = round(map(rawValue, 0, 1023, -250, 750));
   temperatures[timesRead] = temperature;
+  //Old code ends 
+  
+  //New code begins
+  if(millis() > readTempMillis + readTempToWait) {
+    readTempI++;
+    if(readTempI > 100) {
+      readTempJ++;
+      readTempToWait = 1000;
+    }
+  }
+  //New code ends 
+  
+  
 } //Endof: void readTemp()
 
 // Returns raw value from thermocouple.
