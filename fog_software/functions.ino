@@ -4,47 +4,32 @@ int timesRead = 0;
 // TODO: This function currently takes ~11s to do its measurings. This is a problem!
 int readTempJ, readTempI, readTempTemperature;
 long readTempMillis, readTempToWait;
+int timesToReadFast = 100;
+int timesToReadSlow = 10;
+int shortTimeToWait = 1;
+int longTimeToWait = 1000;
 void readTemp() {
-  
-   //Old code begins
-    timesRead++;
-    if(timesRead >= 3) { timesRead = 0; }
-    int tempTemperature = readThermocouple();
-    
-   
-    for(int j = 0; j < 10; j++) {
-      for(int i = 0; i < 100; i++) {
-        tempTemperature = (tempTemperature + readThermocouple()) / 2;
-        delay(1);
-      }
-      delay(1000);
-    }
-    rawValue = tempTemperature;
-    temperature = round(map(rawValue, 0, 1023, -250, 750));
-    temperatures[timesRead] = temperature;
-  //Old code ends 
-  
-  //New code begins
-    if(millis() > readTempMillis + readTempToWait) {
-      timesRead++;
-      if(timesRead >= 3) { timesRead = 0; }
-      int tempTemperature = readThermocouple();
-      readTempI++;
-      if(readTempI > 100) {
-        readTempJ++;
-        readTempToWait = 1000;
-      }
-      tempTemperature = (tempTemperature + readThermocouple()) / 2;
-      if(readTempJ > 10) {
-        rawValue = tempTemperature;
-        temperature = round(map(rawValue, 0, 1023, -250, 750));
-        temperatures[timesRead] = temperature;
-        readTempJ = 0;
-      }
-    }
-  //New code ends 
-  
-  
+ if(millis() >= readTempMillis + readTempToWait) {
+   readTempMillis = millis();
+   timesRead++;
+   if(timesRead >= 3) { timesRead = 0; }
+   readTempI++;
+   readTempToWait = shortTimeToWait;
+   if(readTempI > timesToReadFast) {
+     readTempJ++;
+     readTempToWait = longTimeToWait;
+     readTempI = 0;
+   }
+   tempTemperature = (tempTemperature + readThermocouple()) / 2;
+   if(readTempJ > timesToReadSlow) {
+     rawValue = tempTemperature;
+     temperature = round(map(rawValue, 0, 1023, -250, 750));
+     temperatures[timesRead] = temperature;
+     readTempJ = 0;
+     readTempI = 0;
+     tempTemperature = readThermocouple();
+   }
+ }
 } //Endof: void readTemp()
 
 // Returns raw value from thermocouple.
