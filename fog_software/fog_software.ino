@@ -17,11 +17,11 @@ Tällä ohjelmalla ohjataan Olarin koulun ja lukion Stairvillen savukonetta
 
 int DMXChannel = 1;
 
-const int raw_lim_lo = 440;
-const int raw_lim_hi = 520;
+int raw_lim_lo = 440;
+int raw_lim_hi = 520;
 
-const int lim_lo = 180;
-const int lim_hi = 260;
+int lim_lo = 180;
+int lim_hi = 260;
 
 int rawValue;
 int temperature;
@@ -31,9 +31,9 @@ int temperatures[3];
 const int resistorPin = 2;
 const int fogPin = 3;
 
-const int thermocouplePin = A2;
+const int thermocouplePin = A1;
 
-const int fogButtonPin = 4;
+const int fogButtonPin = A4;
 
 const int dipSwitchPinStart = 4;
 const int dipSwitchPinAmount = 10;

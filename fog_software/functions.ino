@@ -10,47 +10,7 @@ const int shortTimeToWait = 1;
 const int longTimeToWait = 1000;
 
 void readTemp() {
- if(millis() >= readTempMillis + readTempToWait) {
-   readTempMillis = millis();
-   
-   // Second dimension of iteration
-   readTempI2++;
-   readTempToWait = shortTimeToWait;
-   if(readTempI2 > timesToReadFast) {
-     readTempI1++;
-     readTempToWait = longTimeToWait;
-     readTempI2 = 0;
-   }
-   
-   // Measure new temperature and average it with the last one
-   readTempTemperature = (readTempTemperature + readThermocouple()) / 2; // -->
-   // Comment by @ollpu:
-    // This approach has a major flaw: It is biased to the newer calculations.
-    // The newest calculation affects 50% of the final average, while
-    // the second affects 25% and the third 12,5% and so on.
-    // The 100 steps of iteration are completely unnecessary, as the oldest
-    // calculation wouldn't even contribute a ten-thousandth of a percentage to
-    // the final value.
-   
-   // First dimension of iteration
-   if(readTempI1 > timesToReadSlow) {
-     rawValue = readTempTemperature;
-     temperature = round(map(rawValue, 0, 1023, -250, 750)); // Where are these values coming from?
-     temperatures[timesRead] = temperature; // temperatures.lenght = 3, yet the dirst dimension iteration has 10 steps (?)
-     
-     // Reset step counters
-     readTempI1 = 0;
-     readTempI2 = 0;
-     
-     // Reset from previous average
-     readTempTemperature = readThermocouple();
-     
-     // Situate different measurings in different places in the temperatures
-     // array using the timesRead variable as an index.
-     timesRead++;
-     if(timesRead >= 3) { timesRead = 0; }
-   }
- }
+ temperature = round(map(readThermocouple(), 0, 1023, -250, 750));
 } //Endof: void readTemp()
 
 // Returns raw value from thermocouple.
@@ -64,40 +24,49 @@ boolean suitableTemperature() {
 }
 
 // Temperature comparison functions
-boolean singleDangerousHot(int val) { return val > lim_hi+limitRange()/2; }
+boolean singleDangerousHot(int val) { return val > lim_hi+(limitRange()/2); }
 boolean singleTooHot(int val) { return val > lim_hi; }
 boolean singleTooCold(int val) { return val < lim_lo; }
-boolean shouldHeatUp() { return temperature < lim_lo+limitRange()/2; }
+boolean shouldHeatUp() { return temperature < (lim_lo+(limitRange()/2)); }
 boolean shouldStopHeating() { return tooHot(); }
 
 // Returns true if the fog chamber is starting to get too hot. (Still operatable)
 boolean tooHot() {
+  /*
   boolean toReturn = false;
   for(int i = 0; i < 3; i++) {
     if(singleTooHot(temperatures[i])) {
       toReturn = true;
     }
   }
+  */
+  return singleTooHot(temperature);
 }
 
 // Returns true if the fog chamber is starting to get too cold.
 boolean tooCold() {
+  /*
   boolean toReturn = false;
   for(int i = 0; i < 3; i++) {
     if(singleTooCold(temperatures[i])) {
       toReturn = true;
     }
   }
+  */
+  return singleTooCold(temperature);
 }
 
 // Returns true if the fog chamber is starting to get dangerously hot. (Do not operate)
 boolean dangerousHot() {
+  /*
   boolean toReturn = false;
   for(int i = 0; i < 3; i++) {
     if(singleDangerousHot(temperatures[i])) {
       toReturn = true;
     }
   }
+  */
+  return singleDangerousHot(temperature);
 }
 
 // Returns the difference between the temperature lower and upper limits.
@@ -106,8 +75,8 @@ int limitRange() {
 }
 
 void controlHeating() {
-  if(shouldHeatUp) { startHeating(); } // Start heating if temp is too low
-  if(shouldStopHeating) { stopHeating(); } // Stop heating if temp is enough high
+  if(shouldHeatUp()) { startHeating(); } // Start heating if temp is too low
+  if(shouldStopHeating()) { stopHeating(); } // Stop heating if temp is enough high
 }
 
 void startHeating() { analogWrite(resistorPin, 255); } // Start heating by turnin resistor pin on
