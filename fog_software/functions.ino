@@ -5,31 +5,43 @@ int timesRead = 0;
 int readTempJ, readTempI, readTempTemperature;
 long readTempMillis, readTempToWait;
 void readTemp() {
-  timesRead++;
-  if(timesRead >= 3) { timesRead = 0; }
-  int tempTemperature = readThermocouple();
   
-  //Old code begins
-  for(int j = 0; j < 10; j++) {
-    for(int i = 0; i < 100; i++) {
-      tempTemperature = (tempTemperature + readThermocouple()) / 2;
-      delay(1);
+   //Old code begins
+    timesRead++;
+    if(timesRead >= 3) { timesRead = 0; }
+    int tempTemperature = readThermocouple();
+    
+   
+    for(int j = 0; j < 10; j++) {
+      for(int i = 0; i < 100; i++) {
+        tempTemperature = (tempTemperature + readThermocouple()) / 2;
+        delay(1);
+      }
+      delay(1000);
     }
-    delay(1000);
-  }
-  rawValue = tempTemperature;
-  temperature = round(map(rawValue, 0, 1023, -250, 750));
-  temperatures[timesRead] = temperature;
+    rawValue = tempTemperature;
+    temperature = round(map(rawValue, 0, 1023, -250, 750));
+    temperatures[timesRead] = temperature;
   //Old code ends 
   
   //New code begins
-  if(millis() > readTempMillis + readTempToWait) {
-    readTempI++;
-    if(readTempI > 100) {
-      readTempJ++;
-      readTempToWait = 1000;
+    if(millis() > readTempMillis + readTempToWait) {
+      timesRead++;
+      if(timesRead >= 3) { timesRead = 0; }
+      int tempTemperature = readThermocouple();
+      readTempI++;
+      if(readTempI > 100) {
+        readTempJ++;
+        readTempToWait = 1000;
+      }
+      tempTemperature = (tempTemperature + readThermocouple()) / 2;
+      if(readTempJ > 10) {
+        rawValue = tempTemperature;
+        temperature = round(map(rawValue, 0, 1023, -250, 750));
+        temperatures[timesRead] = temperature;
+        readTempJ = 0;
+      }
     }
-  }
   //New code ends 
   
   
