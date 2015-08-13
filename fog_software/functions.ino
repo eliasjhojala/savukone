@@ -1,7 +1,7 @@
 int timesRead = 0;
 // Reads average temperature of the fog chamber over a period of time to cancel
 // out any instabilities in the readings.
-// TODO: This function currently takes ~11s to do its measurings. This is a problem!
+// FIXED TODO: This function currently takes ~11s to do its measurings. This is a problem! FIXED
 int readTempJ, readTempI, readTempTemperature;
 long readTempMillis, readTempToWait;
 int timesToReadFast = 100;
