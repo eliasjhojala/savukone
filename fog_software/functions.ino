@@ -1,33 +1,54 @@
-int timesRead = 0;
+
 // Reads average temperature of the fog chamber over a period of time to cancel
 // out any instabilities in the readings.
-// FIXED TODO: This function currently takes ~11s to do its measurings. This is a problem! FIXED
-int readTempJ, readTempI, readTempTemperature;
+int timesRead = 0;
+int readTempI1, readTempI2, readTempTemperature; // I = index
 long readTempMillis, readTempToWait;
-int timesToReadFast = 100;
-int timesToReadSlow = 10;
-int shortTimeToWait = 1;
-int longTimeToWait = 1000;
+const int timesToReadFast = 100;
+const int timesToReadSlow = 10;
+const int shortTimeToWait = 1;
+const int longTimeToWait = 1000;
+
 void readTemp() {
  if(millis() >= readTempMillis + readTempToWait) {
    readTempMillis = millis();
-   timesRead++;
-   if(timesRead >= 3) { timesRead = 0; }
-   readTempI++;
+   
+   // Second dimension of iteration
+   readTempI2++;
    readTempToWait = shortTimeToWait;
-   if(readTempI > timesToReadFast) {
-     readTempJ++;
+   if(readTempI2 > timesToReadFast) {
+     readTempI1++;
      readTempToWait = longTimeToWait;
-     readTempI = 0;
+     readTempI2 = 0;
    }
-   tempTemperature = (tempTemperature + readThermocouple()) / 2;
-   if(readTempJ > timesToReadSlow) {
-     rawValue = tempTemperature;
-     temperature = round(map(rawValue, 0, 1023, -250, 750));
-     temperatures[timesRead] = temperature;
-     readTempJ = 0;
-     readTempI = 0;
-     tempTemperature = readThermocouple();
+   
+   // Measure new temperature and average it with the last one
+   readTempTemperature = (readTempTemperature + readThermocouple()) / 2; // -->
+   // Comment by @ollpu:
+    // This approach has a major flaw: It is biased to the newer calculations.
+    // The newest calculation affects 50% of the final average, while
+    // the second affects 25% and the third 12,5% and so on.
+    // The 100 steps of iteration are completely unnecessary, as the oldest
+    // calculation wouldn't even contribute a ten-thousandth of a percentage to
+    // the final value.
+   
+   // First dimension of iteration
+   if(readTempI1 > timesToReadSlow) {
+     rawValue = readTempTemperature;
+     temperature = round(map(rawValue, 0, 1023, -250, 750)); // Where are these values coming from?
+     temperatures[timesRead] = temperature; // temperatures.lenght = 3, yet the dirst dimension iteration has 10 steps (?)
+     
+     // Reset step counters
+     readTempI1 = 0;
+     readTempI2 = 0;
+     
+     // Reset from previous average
+     readTempTemperature = readThermocouple();
+     
+     // Situate different measurings in different places in the temperatures
+     // array using the timesRead variable as an index.
+     timesRead++;
+     if(timesRead >= 3) { timesRead = 0; }
    }
  }
 } //Endof: void readTemp()
