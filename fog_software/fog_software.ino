@@ -15,7 +15,7 @@ Tällä ohjelmalla ohjataan Olarin koulun ja lukion Stairvillen savukonetta
 
 #include <DMXSerial.h>
 
-int DMXChannel = 1;
+int DMXChannel = 1; //Variable to store DMXchannel (this will change from dipswitch)
 
 int raw_lim_lo = 440;
 int raw_lim_hi = 520;
