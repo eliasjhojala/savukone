@@ -13,12 +13,13 @@ Tällä ohjelmalla ohjataan Olarin koulun ja lukion Stairvillen savukonetta
 
 */
 
-#include <DMXSerial.h> //Include DMXSerial library to receive DMX
+//#include <DMXSerial.h> //Include DMXSerial library to receive DMX
 
 int DMXChannel = 1; //Variable to store DMXchannel (this will change from dipswitch)
 
-int lim_lo = 180; //Lowest temperature where we can fog
-int lim_hi = 260; //Highest temperature which resistor is allowed to be
+int lim_lo = 170; //Lowest temperature where we can fog
+int lim_hi = 220; //Highest temperature which resistor is allowed to be
+int lim_dangerous = 280;
 
 int rawValue; //Measured value from thermocouple amplifier
 int temperature; //Measured temperature

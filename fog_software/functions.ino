@@ -9,9 +9,40 @@ const int timesToReadSlow = 10;
 const int shortTimeToWait = 1;
 const int longTimeToWait = 1000;
 
+unsigned long temperatureSum = 0;
+int counter = 0;
+unsigned long lastMillis = 0;
+int minTemperature = 10000;
+int maxTemperature = 0;
+int lastTemperature = 0;
+int range, spd;
+long lastMeasuredMillis = 0;
+
 void readTemp() {
- temperature = round(map(readThermocouple(), 0, 1023, -250, 750));
-} //Endof: void readTemp()
+ if(millis() >= lastMillis + 1) {
+    temperatureSum += readThermocouple();
+    minTemperature = min(minTemperature, readThermocouple());
+    maxTemperature = max(maxTemperature, readThermocouple());
+    counter++;
+    lastMillis = millis();
+    if(counter > 500 || (counter > 100 && temperature == 0)) {
+      range = maxTemperature - minTemperature;
+      if(range < 200 || lastTemperature == 0) {
+        lastTemperature = temperature;
+        temperature = int(temperatureSum / counter);
+        temperature = round(map(temperature, 0, 1023, -250, 750));
+        if(lastTemperature != 0) spd = round(float(temperature - lastTemperature) / (float((millis() - lastMeasuredMillis))/3600000)); 
+        lastMeasuredMillis = millis();
+      }
+      //sanitizing variables
+      counter = 0;
+      temperatureSum = 0;
+      minTemperature = 10000;
+      maxTemperature = 0;
+    }
+  } 
+}
+
 
 // Returns raw value from thermocouple.
 int readThermocouple() {
@@ -24,48 +55,25 @@ boolean suitableTemperature() {
 }
 
 // Temperature comparison functions
-boolean singleDangerousHot(int val) { return val > lim_hi+(limitRange()/2); }
-boolean singleTooHot(int val) { return val > lim_hi; }
+boolean singleDangerousHot(int val) { return val > lim_dangerous; }
+boolean singleTooHot(int val) { return val > lim_hi-20; }
 boolean singleTooCold(int val) { return val < lim_lo; }
 boolean shouldHeatUp() { return temperature < (lim_lo+(limitRange()/2)); }
 boolean shouldStopHeating() { return tooHot(); }
 
+
 // Returns true if the fog chamber is starting to get too hot. (Still operatable)
 boolean tooHot() {
-  /*
-  boolean toReturn = false;
-  for(int i = 0; i < 3; i++) {
-    if(singleTooHot(temperatures[i])) {
-      toReturn = true;
-    }
-  }
-  */
   return singleTooHot(temperature);
 }
 
 // Returns true if the fog chamber is starting to get too cold.
 boolean tooCold() {
-  /*
-  boolean toReturn = false;
-  for(int i = 0; i < 3; i++) {
-    if(singleTooCold(temperatures[i])) {
-      toReturn = true;
-    }
-  }
-  */
   return singleTooCold(temperature);
 }
 
 // Returns true if the fog chamber is starting to get dangerously hot. (Do not operate)
 boolean dangerousHot() {
-  /*
-  boolean toReturn = false;
-  for(int i = 0; i < 3; i++) {
-    if(singleDangerousHot(temperatures[i])) {
-      toReturn = true;
-    }
-  }
-  */
   return singleDangerousHot(temperature);
 }
 
