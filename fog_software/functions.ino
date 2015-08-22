@@ -1,47 +1,28 @@
 
 // Reads average temperature of the fog chamber over a period of time to cancel
 // out any instabilities in the readings.
-int timesRead = 0;
-int readTempI1, readTempI2, readTempTemperature; // I = index
-long readTempMillis, readTempToWait;
-const int timesToReadFast = 100;
-const int timesToReadSlow = 10;
-const int shortTimeToWait = 1;
-const int longTimeToWait = 1000;
 
 unsigned long temperatureSum = 0;
 int counter = 0;
 unsigned long lastMillis = 0;
-int minTemperature = 10000;
-int maxTemperature = 0;
-int lastTemperature = 0;
-int range, spd;
-long lastMeasuredMillis = 0;
 
-void readTemp() {
- if(millis() >= lastMillis + 1) {
-    temperatureSum += readThermocouple();
-    minTemperature = min(minTemperature, readThermocouple());
-    maxTemperature = max(maxTemperature, readThermocouple());
-    counter++;
-    lastMillis = millis();
-    if(counter > 500 || (counter > 100 && temperature == 0)) {
-      range = maxTemperature - minTemperature;
-      if(range < 200 || lastTemperature == 0) {
-        lastTemperature = temperature;
-        temperature = int(temperatureSum / counter);
-        temperature = round(map(temperature, 0, 1023, -250, 750));
-        if(lastTemperature != 0) spd = round(float(temperature - lastTemperature) / (float((millis() - lastMeasuredMillis))/3600000)); 
-        lastMeasuredMillis = millis();
-      }
+void readMachineTemperature() {
+if(millis() >= lastMillis + 1) {                // delay without pausing the whole software
+    counter++;                                  // delay....
+    lastMillis = millis();                      // delay....
+
+    temperatureSum += readThermocouple(); 
+    if(counter > 500 || (counter > 100 && temperature == 0)) { // take 500 points for avg, or 100 points if first time to get value fast
+
+      temperature = int(temperatureSum / counter); // count avg value
+      temperature = round(map(temperature, 0, 1023, -250, 750)); // map raw value to temperature as celsius degrees
+      
       //sanitizing variables
       counter = 0;
       temperatureSum = 0;
-      minTemperature = 10000;
-      maxTemperature = 0;
     }
-  } 
-}
+  } // Endof: delay 
+} //Endof: readMachineTemperature()
 
 
 // Returns raw value from thermocouple.

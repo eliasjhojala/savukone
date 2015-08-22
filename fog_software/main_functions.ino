@@ -1,30 +1,34 @@
 void setup() {
 //  DMXSerial.init(DMXReceiver);
-Serial.begin(9600);
+  Serial.begin(9600);
+  pinMode(13, OUTPUT);
 }
+
+
 long serialLast = 0;
 void loop() {
-  pinMode(13, OUTPUT);
-  readTemp(); //Read temperature
+  readMachineTemperature();
   controlHeating(); //Turn resistor on/off according to temperature
-  controlFog(); //Control fog output
+//  controlFog(); //Control fog output
 
-  if(dangerousHot()) { analogWrite(13, 255); }
-  else { analogWrite(13, 0); }
   if(millis() > serialLast + 1000) {
-    Serial.println("Temperature: " + String(temperature));
-    Serial.println("tooCold(): " + String(tooCold()));
-    Serial.println("dangerousHot(): " + String(dangerousHot()));
-    Serial.println("tooHot(): " + String(tooHot()));
+    Serial.print("Temperature: " + String(temperature));
+    Serial.print("   tooCold(): " + String(tooCold()));
+    Serial.print("   dangerousHot(): " + String(dangerousHot()));
+    Serial.print("   tooHot(): " + String(tooHot()));
+    Serial.print("   shouldHeatUp(): " + String(shouldHeatUp()));
+    Serial.print("   shouldStopHeating(): " + String(shouldStopHeating()));
+    
     Serial.println();
     serialLast = millis();
   }
 
-  digitalWrite(3, digitalRead(4));
+  digitalWrite(3, digitalRead(4)); //Control fog
 }
 
 void controlFog() {
-  if(fogButtonPressed() || fogFromDMX()) { fogNow(); }
-  else { stopFog(); }
+  if(fogButtonPressed() || fogFromDMX()) {
+    fogNow();
+  } else { stopFog(); }
 }
 
