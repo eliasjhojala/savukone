@@ -9,8 +9,8 @@ void setup() {
 }
 
 void loop() {
-  Serial.println(String(readMachineAvgTemperature()) + "   " + String(millis()/1000)); 
-  setHeater(true);
+  Serial.println(String(readMachineAvgTemperature()) + "   " + String(numberOfDipsOn())); 
+  
 }
 
 int readMachineTemperature() {
@@ -20,11 +20,11 @@ int readMachineTemperature() {
 
 int readMachineAvgTemperature() {
   long val = 0;
-  for(int i = 0; i <= 10000; i++) {
+  for(int i = 0; i <= 100; i++) {
     val += readMachineTemperature();
     delay(10);
   }
-  return int(val/10000);
+  return int(val/100);
 }
 
 void setFog(boolean doFog) {
