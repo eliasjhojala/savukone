@@ -7,7 +7,7 @@ int receiveDMX(int ch) {
 // Returns true if DMX value received is over 50%.
 boolean fogFromDMX() {
   if(useDmx()) return receiveDMX(DMXChannel) > 127;
-  return 0;
+  return false;
 }
 
 boolean useDmx() {

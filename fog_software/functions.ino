@@ -37,7 +37,7 @@ boolean suitableTemperature() {
 
 // Temperature comparison functions
 boolean singleDangerousHot(int val) { return val > lim_dangerous; }
-boolean singleTooHot(int val) { return val > lim_hi-20; }
+boolean singleTooHot(int val) { return val > lim_hi; }
 boolean singleTooCold(int val) { return val < lim_lo; }
 boolean shouldHeatUp() { return temperature < (lim_lo+(limitRange()/2)); }
 boolean shouldStopHeating() { return tooHot(); }
@@ -91,7 +91,7 @@ int readDipSwitch() {
   // dipSwitchPinAmount should be 10 or over for full DMX channel range (last
   //  switch is the additional boolean)
   for(int i = 0; i < dipSwitchPinAmount-1; i++) {
-    toReturn += digitalRead(dipSwitchPinStart + i) << i;
+    toReturn += int(digitalRead(dipSwitchPinStart + i)) << i;
   }
   return toReturn;
 }
