@@ -100,3 +100,5 @@ int readDipSwitch() {
 boolean readDipSwitchLast() {
   return digitalRead(dipSwitchPinStart + dipSwitchPinAmount-1) == HIGH;
 }
+
+

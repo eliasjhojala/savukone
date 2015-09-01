@@ -1,25 +1,10 @@
-/*
-Tällä ohjelmalla ohjataan Olarin koulun ja lukion Stairvillen savukonetta
-
-  {
-    Thermocouplen: raja-arvot: 35, 120
-    Kytkentä: punainen johto - red
-              vihreä johto - yellow
-              
-              vahvistimen vin: 5v
-              vahvistimen gnd: gnd
-  }
-
-
-*/
-
-//#include <DMXSerial.h> //Include DMXSerial library to receive DMX
+#include <DMXSerial.h> //Include DMXSerial library to receive DMX
 
 int DMXChannel = 1; //Variable to store DMXchannel (this will change from dipswitch)
 
-int lim_lo = 170; //Lowest temperature where we can fog
-int lim_hi = 220; //Highest temperature which resistor is allowed to be
-int lim_dangerous = 280;
+int lim_lo = 180; //Lowest temperature where we can fog
+int lim_hi = 230; //Highest temperature which resistor is allowed to be
+int lim_dangerous = 260;
 
 int rawValue; //Measured value from thermocouple amplifier
 int temperature; //Measured temperature
