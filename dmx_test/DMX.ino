@@ -1,16 +1,3 @@
-/*
-DI --> -
-DE --> GND
-RE --> GND
-RO --> RX
-
-GND --> DMX GND + Arduino GND
-A --> DMX A
-B --> DMX B
-VCC --> Arduino 5V
-*/
-
-
 int receiveDMX(int ch) {
   //Return value from specific channel or zero if it hasn't been updated in last 800ms
  if (DMXSerial.noDataSince() < 800) return DMXSerial.read(ch);
