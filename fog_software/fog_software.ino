@@ -14,7 +14,7 @@ int temperatures[3];
 const int resistorPin = 2; //Where the warmUp resistor is plugged
 const int fogPin = 3; //Where the pumps are plugged
 
-const int thermocouplePin = A1; //Where the thermocouple (actually amplifier output pin) is plugged
+const int thermocouplePin = A0; //Where the thermocouple (actually amplifier output pin) is plugged
 
 const int fogButtonPin = A4; //Where the manual fog button is plugged
 

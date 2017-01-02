@@ -1,5 +1,5 @@
 /*
-DI --> -
+DI --> GND
 DE --> GND
 RE --> GND
 RO --> RX
