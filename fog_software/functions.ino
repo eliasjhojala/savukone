@@ -6,6 +6,17 @@ unsigned long temperatureSum = 0;
 int counter = 0;
 unsigned long lastMillis = 0;
 
+unsigned long lastTemperature = 0;
+unsigned long temperatureDifference = 0;
+unsigned long temperatureSaved = 0;
+unsigned long lastTemperatureSaved = 0;
+float temperatureDifferenceInMinute = 0;
+
+unsigned long startedHeating = 0;
+unsigned long stoppedHeating = 0;
+boolean heatedTooLong = false;
+boolean heatingOn = false;
+
 void readMachineTemperature() {
 if(millis() >= lastMillis + 1) {                // delay without pausing the whole software
     counter++;                                  // delay....
@@ -13,9 +24,15 @@ if(millis() >= lastMillis + 1) {                // delay without pausing the who
 
     temperatureSum += readThermocouple(); 
     if(counter > 2000 || (counter > 200 && temperature == 0)) { // take 500 points for avg, or 100 points if first time to get value fast
-
+      
+      lastTemperature = temperature;
+      lastTemperatureSaved = temperatureSaved;
+      
       temperature = int(temperatureSum / counter); // count avg value
       temperature = round(map(temperature, 0, 1023, -250, 750)); // map raw value to temperature as celsius degrees
+      temperatureSaved = millis();
+      temperatureDifference = abs(lastTemperature - temperature);
+      temperatureDifferenceInMinute = float(temperatureDifference) / float( float(temperatureSaved - lastTemperatureSaved) / (60*1000) );
       
       //sanitizing variables
       counter = 0;
@@ -39,8 +56,29 @@ boolean suitableTemperature() {
 boolean singleDangerousHot(int val) { return val > lim_dangerous; }
 boolean singleTooHot(int val) { return val > lim_hi; }
 boolean singleTooCold(int val) { return val < lim_lo; }
-boolean shouldHeatUp() { return temperature < (lim_hi-(limitRange()/3)); }
-boolean shouldStopHeating() { return tooHot(); }
+
+boolean singleTemperatureError(int val) {
+  boolean error = false;
+  
+  if(val < 0 || val > 400) { error = true; }
+
+  if(heatingOn && (millis() - startedHeating > 20*60*1000)) {
+    heatedTooLong = true;
+  }
+  if(heatedTooLong && !heatingOn && (millis() - stoppedHeating > 20*60*1000)) {
+    heatedTooLong = false;
+  }
+  
+  if(heatedTooLong) { error = true; }
+
+  if(temperatureDifferenceInMinute > 50) { error = true; }
+  
+  
+  return error;
+}
+
+boolean shouldHeatUp() { return !shouldStopHeating() && temperature < (lim_hi-(limitRange()/3)); }
+boolean shouldStopHeating() { return tooHot() || temperatureError(); }
 
 
 // Returns true if the fog chamber is starting to get too hot. (Still operatable)
@@ -58,6 +96,11 @@ boolean dangerousHot() {
   return singleDangerousHot(temperature);
 }
 
+//Returns true if there is some error with temperature measurment
+boolean temperatureError() {
+  return singleTemperatureError(temperature);
+}
+
 // Returns the difference between the temperature lower and upper limits.
 int limitRange() {
   return lim_hi-lim_lo;
@@ -68,8 +111,21 @@ void controlHeating() {
   if(shouldStopHeating()) { stopHeating(); } // Stop heating if temp is enough high
 }
 
-void startHeating() { analogWrite(resistorPin, 255); } // Start heating by turnin resistor pin on
-void stopHeating() { analogWrite(resistorPin, 0); } // Stop heating by turning resistor pin off
+void startHeating() { 
+  analogWrite(resistorPin, 255); // Start heating by turnin resistor pin on
+  if(!heatingOn) {
+    startedHeating = millis();
+    heatingOn = true;
+  }
+} 
+
+void stopHeating() { 
+  analogWrite(resistorPin, 0); // Stop heating by turning resistor pin off
+  if(heatingOn) {
+    stoppedHeating = millis();
+    heatingOn = false;
+  }
+} 
 
 void fogNow() {
   if(suitableTemperature()) { fogNowWithoutAnyCheck(); }

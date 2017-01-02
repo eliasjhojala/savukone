@@ -32,15 +32,25 @@ int readThermocouple() {
 
 // Returns true when the fog chamber is heated properly
 boolean suitableTemperature() {
-  return !tooCold() && !dangerousHot();
+  return !tooCold() && !dangerousHot() && !temperatureError();
 }
 
 // Temperature comparison functions
 boolean singleDangerousHot(int val) { return val > lim_dangerous; }
 boolean singleTooHot(int val) { return val > lim_hi; }
 boolean singleTooCold(int val) { return val < lim_lo; }
-boolean shouldHeatUp() { return temperature < (lim_lo+(limitRange()/2)); }
-boolean shouldStopHeating() { return tooHot(); }
+
+boolean singleTemperatureError(int val) {
+  boolean error = false;
+  if(val < 0 || val > 400) { error = true; }
+  return error;
+}
+
+boolean shouldHeatUp() { return !shouldStopHeating() && temperature < (lim_lo+(limitRange()/2)); }
+boolean shouldStopHeating() { return tooHot() || temperatureError(); }
+
+
+
 
 
 // Returns true if the fog chamber is starting to get too hot. (Still operatable)
@@ -56,6 +66,11 @@ boolean tooCold() {
 // Returns true if the fog chamber is starting to get dangerously hot. (Do not operate)
 boolean dangerousHot() {
   return singleDangerousHot(temperature);
+}
+
+//Returns true if there is some error with temperature measurment
+boolean temperatureError() {
+  return singleTemperatureError(temperature);
 }
 
 // Returns the difference between the temperature lower and upper limits.
