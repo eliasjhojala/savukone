@@ -12,7 +12,7 @@ if(millis() >= lastMillis + 1) {                // delay without pausing the who
     lastMillis = millis();                      // delay....
 
     temperatureSum += readThermocouple(); 
-    if(counter > 500 || (counter > 100 && temperature == 0)) { // take 500 points for avg, or 100 points if first time to get value fast
+    if(counter > 2000 || (counter > 200 && temperature == 0)) { // take 500 points for avg, or 100 points if first time to get value fast
 
       temperature = int(temperatureSum / counter); // count avg value
       temperature = round(map(temperature, 0, 1023, -250, 750)); // map raw value to temperature as celsius degrees
@@ -39,7 +39,7 @@ boolean suitableTemperature() {
 boolean singleDangerousHot(int val) { return val > lim_dangerous; }
 boolean singleTooHot(int val) { return val > lim_hi; }
 boolean singleTooCold(int val) { return val < lim_lo; }
-boolean shouldHeatUp() { return temperature < (lim_lo+(limitRange()/2)); }
+boolean shouldHeatUp() { return temperature < (lim_hi-(limitRange()/3)); }
 boolean shouldStopHeating() { return tooHot(); }
 
 
