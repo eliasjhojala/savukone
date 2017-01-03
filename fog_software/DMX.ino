@@ -12,32 +12,29 @@ VCC --> Arduino 5V
 
 
 int receiveDMX(int ch) {
-  //Return value from specific channel or zero if it hasn't been updated in last 800ms
- if (DMXSerial.noDataSince() < 800) return DMXSerial.read(ch);
- return 0;
+  // Return value from specific channel or zero if it hasn't been updated in last 800ms
+  if (DMXSerial.noDataSince() < 800) return DMXSerial.read(ch);
+  return 0;
 }
 
 // Returns true if DMX value received is over 50%.
 boolean fogFromDMX() {
-  if(useDmx()) return receiveDMX(DMXChannel) > 127;
-  return false;
+  return useDmx() && receiveDMX(DMXChannel) > 127;
 }
 
 boolean useDmx() {
   return DMXChannel > 0 && DMXChannel <= 512;
 }
 
-
-int dmxChannel()  {
-  return readDipSwitch()*int(readDipSwitchLast());
+int dmxChannel() {
+  return readDipSwitch() * readDipSwitchLast();
 }
 
-long DMXChannelLastSet;
-
+// Read DMX channel only every 100 ms
+long DMXChannelLastUpdated = 0;
 void setDmxChannelFromDips() {
-  if(millis() + 100 > DMXChannelLastSet) {
+  if(millis() > DMXChannelLastUpdated + 100) {
     DMXChannel = dmxChannel();
-    DMXChannelLastSet = millis();
+    DMXChannelLastUpdated = millis();
   }
 }
-

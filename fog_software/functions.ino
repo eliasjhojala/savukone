@@ -6,8 +6,8 @@ unsigned long temperatureSum = 0;
 int counter = 0;
 unsigned long lastMillis = 0;
 
-unsigned long lastTemperature = 0;
-unsigned long temperatureDifference = 0;
+int lastTemperature = 0;
+int temperatureDifference = 0;
 unsigned long temperatureSaved = 0;
 unsigned long lastTemperatureSaved = 0;
 float temperatureDifferenceInMinute = 0;
@@ -18,28 +18,28 @@ boolean heatedTooLong = false;
 boolean heatingOn = false;
 
 void readMachineTemperature() {
-if(millis() >= lastMillis + 1) {                // delay without pausing the whole software
-    counter++;                                  // delay....
-    lastMillis = millis();                      // delay....
-
-    temperatureSum += readThermocouple(); 
-    if(counter > 2000 || (counter > 200 && temperature == 0)) { // take 500 points for avg, or 100 points if first time to get value fast
+  if (millis() >= lastMillis + 1) { // Measure at most once per ms
+    counter++;
+    lastMillis = millis();
+    
+    temperatureSum += readThermocouple();
+    if (counter > 2000 || (counter > 200 && temperature == 0)) { // take 2000 points for avg, or 200 points if first time to get value fast
       
       lastTemperature = temperature;
       lastTemperatureSaved = temperatureSaved;
       
-      temperature = int(temperatureSum / counter); // count avg value
+      temperature = temperatureSum / counter; // count avg value
       temperature = round(map(temperature, 0, 1023, -250, 750)); // map raw value to temperature as celsius degrees
       temperatureSaved = millis();
       temperatureDifference = abs(lastTemperature - temperature);
-      temperatureDifferenceInMinute = float(temperatureDifference) / float( float(temperatureSaved - lastTemperatureSaved) / (60*1000) );
+      temperatureDifferenceInMinute = float(temperatureDifference) / (temperatureSaved - lastTemperatureSaved) * 60*1000;
       
-      //sanitizing variables
+      // Reset variables
       counter = 0;
       temperatureSum = 0;
     }
-  } // Endof: delay 
-} //Endof: readMachineTemperature()
+  }
+}
 
 
 // Returns raw value from thermocouple.
@@ -60,26 +60,24 @@ boolean singleTooCold(int val) { return val < lim_lo; }
 boolean singleTemperatureError(int val) {
   boolean error = false;
   
-  if(val < 0 || val > 400) { error = true; }
-
-  if(heatingOn && (millis() - startedHeating > 20*60*1000)) {
+  error |= val < 0 || val > 400
+  
+  if (heatingOn && (millis() - startedHeating > 20*60*1000)) {
     heatedTooLong = true;
   }
-  if(heatedTooLong && !heatingOn && (millis() - stoppedHeating > 20*60*1000)) {
+  
+  if (heatedTooLong && !heatingOn && (millis() - stoppedHeating > 20*60*1000)) {
     heatedTooLong = false;
   }
   
-  if(heatedTooLong) { error = true; }
-
-  if(temperatureDifferenceInMinute > 50) { error = true; }
-  
+  error |= heatedTooLong;
+  error |= temperatureDifferenceInMinute > 50;
   
   return error;
 }
 
 boolean shouldHeatUp() { return !shouldStopHeating() && temperature < (lim_hi-(limitRange()/3)); }
 boolean shouldStopHeating() { return tooHot() || temperatureError(); }
-
 
 // Returns true if the fog chamber is starting to get too hot. (Still operatable)
 boolean tooHot() {
@@ -96,7 +94,7 @@ boolean dangerousHot() {
   return singleDangerousHot(temperature);
 }
 
-//Returns true if there is some error with temperature measurment
+// Returns true if there is some error with temperature measurment
 boolean temperatureError() {
   return singleTemperatureError(temperature);
 }
@@ -107,33 +105,33 @@ int limitRange() {
 }
 
 void controlHeating() {
-  if(shouldHeatUp()) { startHeating(); } // Start heating if temp is too low
-  if(shouldStopHeating()) { stopHeating(); } // Stop heating if temp is enough high
+  if (shouldHeatUp()) startHeating();     // Start heating if temp is too low
+  if (shouldStopHeating()) stopHeating(); // Stop heating if temp is high enough
 }
 
-void startHeating() { 
+void startHeating() {
   analogWrite(resistorPin, 255); // Start heating by turnin resistor pin on
-  if(!heatingOn) {
+  if (!heatingOn) {
     startedHeating = millis();
     heatingOn = true;
   }
-} 
+}
 
-void stopHeating() { 
+void stopHeating() {
   analogWrite(resistorPin, 0); // Stop heating by turning resistor pin off
-  if(heatingOn) {
+  if (heatingOn) {
     stoppedHeating = millis();
     heatingOn = false;
   }
-} 
+}
 
 void fogNow() {
-  if(suitableTemperature()) { fogNowWithoutAnyCheck(); }
-  else { stopFog(); }
+  if (suitableTemperature()) fogNowWithoutAnyCheck();
+  else stopFog();
 }
 
 void fogNowWithoutAnyCheck() { analogWrite(fogPin, 255); } // Fog now without checking temperatures by turning fog pin on
-void stopFog() { analogWrite(fogPin, 0); } // Stop fog
+void stopFog() { analogWrite(fogPin, 0); }
 
 // Checks if physical fog button is depressed.
 boolean fogButtonPressed() {
@@ -146,15 +144,13 @@ int readDipSwitch() {
   // Works as long as dipSwitchPinAmount 15 or less (int is 16bit, sign bit included)
   // dipSwitchPinAmount should be 10 or over for full DMX channel range (last
   //  switch is the additional boolean)
-  for(int i = 0; i < dipSwitchPinAmount-1; i++) {
-    toReturn += int(digitalRead(dipSwitchPinStart + i)) << i;
+  for (int i = 0; i < dipSwitchPinAmount-1; i++) {
+    toReturn |= digitalRead(dipSwitchPinStart + i) << i;
   }
   return toReturn;
 }
 
 // Read last dip-switch for an additional boolean
 boolean readDipSwitchLast() {
-  return digitalRead(dipSwitchPinStart + dipSwitchPinAmount-1) == HIGH;
+  return digitalRead(dipSwitchPinStart + dipSwitchPinAmount-1);
 }
-
-
